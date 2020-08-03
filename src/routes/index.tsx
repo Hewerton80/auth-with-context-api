@@ -4,8 +4,8 @@ import {Switch, Redirect} from 'react-router-dom';
 import Route from './Route';
 //import DashBoard from './dashBoard.routes';
 //import SingIn from './auth.routes';
-import SingIn from '../pages/SingIn';
-import DashBoard from '../pages/DashBoard';
+import SingIn from '../pages/authentication/SingIn';
+import DashBoard from '../pages/system/DashBoard';
 
 const Routes: FC = ()=>{
     const {singed} = useContext(AuthContext);
@@ -32,7 +32,9 @@ const Routes: FC = ()=>{
                 //         }} />
                 //     )
                 // )}  
-            />
+            >
+                {/* <Route path="/tela1" component={Teste} exact/> */}
+            </Route>
             <Redirect from="*" to='/' />        
         </Switch>
     )

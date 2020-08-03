@@ -1,6 +1,7 @@
-import React,{ createContext, useCallback, FC, useState } from "react";
+import React,{ createContext, useCallback, FC, useState, useEffect } from "react";
 import api from '../services/api';
 import { AxiosResponse } from "axios";
+import Swal from 'sweetalert2'
 
 interface User {
     name: string;
@@ -10,8 +11,8 @@ interface User {
 interface AuthContexData {
     singed: boolean;
     user: User | null;
-    singIn():Promise<void>,
-    singOut():Promise<void>
+    singIn():void,
+    singOut():void
 }
 
 
@@ -24,16 +25,36 @@ const AuthContex = createContext<AuthContexData>({} as AuthContexData);// equiva
 
 export const AuthProvider: FC = ({children})=>{
 
-    const [user, setUser] = useState<User | null>(loadStorageData());
+    const [load, setLoad] = useState<boolean>(true);
+    const [user, setUser] = useState<User | null>(null);
 
-    function loadStorageData(): User | null{
-        const userStorage = localStorage.getItem('user');
-        const tokenStorage = localStorage.getItem('token');
-        if(userStorage && tokenStorage){
-            return JSON.parse(userStorage);
+    useEffect(()=>{
+        function delay(time: number){
+            return new Promise( resolve => setTimeout(resolve, time) );
         }
-        return null;
-    }
+        async function loadStorageData(){
+            setLoad(()=>true);
+            //Swal.showLoading() 
+            console.log("verificando o token....");
+            const tokenStorage = localStorage.getItem('token');
+            const userStorage = localStorage.getItem('user');
+            await delay(5000);//verificando token
+            //Swal.hideLoading()
+            console.log('terminou de veridicar o token')
+            if(userStorage && tokenStorage){
+                setUser(()=>JSON.parse(userStorage));
+                console.log('terminou de setar o user')
+            }
+            else{
+                setUser(()=> null);
+            }
+            setLoad(()=>false);
+            console.log('terminou o load')
+        }
+        loadStorageData();
+    },[])
+
+
 
     const handleLogin = useCallback(async ()=>{
         const response = await api.get< any, AxiosResponse<ResponseLogin> >('/auth');
@@ -57,7 +78,12 @@ export const AuthProvider: FC = ({children})=>{
                 singOut: handleLoout
             }}
         >
-            {children}
+
+            {load?
+                <p>loading...</p>
+                :
+                children
+            }
         </AuthContex.Provider>
     )
 };
